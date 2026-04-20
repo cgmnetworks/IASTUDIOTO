@@ -21,6 +21,7 @@ export default function App() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [job, setJob] = useState<Job | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   // Poll for job status
@@ -62,32 +63,41 @@ export default function App() {
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
+    setUploadError(null);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const selectedFile = e.dataTransfer.files[0];
       if (selectedFile.name.endsWith(".zip")) {
         setFile(selectedFile);
         resetState();
       } else {
-        alert("Por favor sube un archivo .zip");
+        setUploadError("Por favor sube un archivo con extensión .zip");
       }
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      resetState();
+      const selectedFile = e.target.files[0];
+      if (selectedFile.name.endsWith(".zip")) {
+        setFile(selectedFile);
+        resetState();
+      } else {
+        setUploadError("El archivo debe ser un .zip");
+      }
     }
   };
 
   const resetState = () => {
     setJobId(null);
     setJob(null);
+    setUploadError(null);
   };
 
   const startConversion = async () => {
     if (!file) return;
 
+    setUploadError(null);
     const formData = new FormData();
     formData.append("projectZip", file);
     formData.append("format", format);
@@ -99,13 +109,14 @@ export default function App() {
       });
 
       if (!res.ok) {
-        throw new Error("No se pudo iniciar el proceso");
+        const errData = await res.json().catch(() => ({ error: `Error del servidor: ${res.status}` }));
+        throw new Error(errData.error || "No se pudo iniciar el proceso");
       }
 
       const data = await res.json();
       setJobId(data.jobId);
-    } catch (err) {
-      alert("Uh oh! Hubo un problema al subir el archivo.");
+    } catch (err: any) {
+      setUploadError(err.message || "Uh oh! Hubo un problema al subir el archivo.");
     }
   };
 
@@ -126,6 +137,14 @@ export default function App() {
         {/* Upload Zone */}
         {!jobId && (
           <div className="space-y-6">
+            
+            {uploadError && (
+              <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <p className="font-medium text-sm">{uploadError}</p>
+              </div>
+            )}
+
             <label
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}

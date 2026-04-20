@@ -45,9 +45,11 @@ function runCommand(cmd: string, args: string[], cwd: string, onData: (data: str
   });
 }
 
-// Ensure working directory exists on startup
-fs.mkdir(TEMP_JOBS, { recursive: true }).catch(console.error);
-fs.mkdir(TEMP_UPLOADS, { recursive: true }).catch(console.error);
+import { existsSync, mkdirSync } from "fs";
+
+// Ensure working directory exists on startup synchronously before any request!
+if (!existsSync(TEMP_JOBS)) mkdirSync(TEMP_JOBS, { recursive: true });
+if (!existsSync(TEMP_UPLOADS)) mkdirSync(TEMP_UPLOADS, { recursive: true });
 
 // API endpoint to capture the upload and start conversion
 app.post("/api/convert", upload.single("projectZip"), async (req, res) => {
