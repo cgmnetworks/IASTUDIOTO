@@ -52,7 +52,7 @@ if (!existsSync(TEMP_JOBS)) mkdirSync(TEMP_JOBS, { recursive: true });
 if (!existsSync(TEMP_UPLOADS)) mkdirSync(TEMP_UPLOADS, { recursive: true });
 
 // API endpoint to capture the upload and start conversion
-app.post("/api/convert", upload.single("projectZip"), async (req, res) => {
+app.post("/svc/convert", upload.single("projectZip"), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No se proporcionó ningún archivo." });
   }
@@ -238,7 +238,7 @@ add_shortcode('aistudio_app', 'aistudio_app_shortcode');
 });
 
 // API endpoint to check job status
-app.get("/api/job/:jobId", (req, res) => {
+app.get("/svc/job/:jobId", (req, res) => {
   const job = jobs.get(req.params.jobId);
   if (!job) {
     return res.status(404).json({ error: "Trabajo no encontrado." });
@@ -248,7 +248,7 @@ app.get("/api/job/:jobId", (req, res) => {
 });
 
 // API endpoint to download the compiled cPanel zip
-app.get("/api/download/:jobId", (req, res) => {
+app.get("/svc/download/:jobId", (req, res) => {
   const job = jobs.get(req.params.jobId);
   if (!job || job.status !== "completed" || !job.outZip) {
     return res.status(400).json({ error: "El archivo no está listo para su descarga." });

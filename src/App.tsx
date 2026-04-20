@@ -35,7 +35,7 @@ export default function App() {
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/job/${jobId}`);
+        const res = await fetch(`/svc/job/${jobId}`);
         if (res.ok) {
           const data = await res.json();
           setJob(data);
@@ -103,7 +103,7 @@ export default function App() {
     formData.append("format", format);
 
     try {
-      const res = await fetch("/api/convert", {
+      const res = await fetch("/svc/convert", {
         method: "POST",
         body: formData,
       });
@@ -264,7 +264,7 @@ export default function App() {
             <div className="pt-4 space-y-3">
               {job?.status === "completed" && (
                 <a
-                  href={`/api/download/${jobId}`}
+                  href={`/svc/download/${jobId}`}
                   className="w-full py-4 px-6 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold transition-all flex justify-center items-center gap-2 outline-none focus:ring-4 focus:ring-green-500/20 shadow-lg shadow-green-500/20"
                 >
                   <Download className="w-5 h-5" />
