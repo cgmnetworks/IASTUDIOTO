@@ -1,0 +1,6 @@
+{
+  "name": "IASTUDIOTO",
+  "description": "Herramienta que compila proyectos descargados de IA (ZIP) en formatos listos para producción para subirse a cualquier cPanel, Vercel o directamente convertirlo en un Plugin de WordPress.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
