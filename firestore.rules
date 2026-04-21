@@ -21,6 +21,21 @@ service cloud.firestore {
              data.createdAt is string && data.createdAt.size() <= 50;
     }
 
+    function isValidWaLink(data) {
+      return data.keys().hasAll(['phone', 'url', 'createdAt']) &&
+             data.phone is string && data.phone.size() <= 50 &&
+             data.url is string && data.url.size() <= 1000 &&
+             data.createdAt is string && data.createdAt.size() <= 60 &&
+             (data.keys().hasAny(['message']) ? (data.message is string && data.message.size() <= 2000) : true);
+    }
+    
+    function isValidWebsite(data) {
+      return data.keys().hasAll(['prompt', 'status', 'createdAt']) &&
+             data.prompt is string && data.prompt.size() <= 10000 &&
+             data.status is string && data.status.size() <= 50 &&
+             data.createdAt is string && data.createdAt.size() <= 60;
+    }
+
     match /users/{userId} {
       allow read: if isSignedIn() && request.auth.uid == userId;
       allow create: if isSignedIn() && 
@@ -33,6 +48,36 @@ service cloud.firestore {
                        isValidUser(incoming()) &&
                        incoming().email == existing().email &&
                        incoming().createdAt == existing().createdAt;
+                       
+      // WhatsApp Links Subcollection
+      match /whatsapp_links/{linkId} {
+        allow read, list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && 
+                         isValidId(userId) && isValidId(linkId) &&
+                         request.auth.uid == userId && 
+                         isValidWaLink(incoming());
+        allow update: if isSignedIn() &&
+                         isValidId(userId) && isValidId(linkId) &&
+                         request.auth.uid == userId &&
+                         isValidWaLink(incoming()) &&
+                         incoming().createdAt == existing().createdAt;
+        allow delete: if isSignedIn() && request.auth.uid == userId;
+      }
+      
+      // Website Projects Subcollection
+      match /websites/{siteId} {
+        allow read, list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && 
+                         isValidId(userId) && isValidId(siteId) &&
+                         request.auth.uid == userId && 
+                         isValidWebsite(incoming());
+        allow update: if isSignedIn() &&
+                         isValidId(userId) && isValidId(siteId) &&
+                         request.auth.uid == userId &&
+                         isValidWebsite(incoming()) &&
+                         incoming().createdAt == existing().createdAt;
+        allow delete: if isSignedIn() && request.auth.uid == userId;
+      }
     }
   }
 }

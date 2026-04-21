@@ -9,8 +9,9 @@ import {
   Download, Rocket, FileArchive, LayoutTemplate, Link as LinkIcon, 
   MessageCircle, Server, ShoppingBag, Menu, X, Copy, ArrowRight, Lock, LogOut
 } from "lucide-react";
-import { auth, signIn, signOut } from "./firebase";
+import { auth, signIn, signOut, db } from "./firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
+import { doc, collection, setDoc } from "firebase/firestore";
 
 type JobStatus = "pending" | "extracting" | "installing" | "building" | "completed" | "error";
 
@@ -27,6 +28,7 @@ export default function App() {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("converter");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -36,6 +38,11 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   // --- Converter State ---
   const [file, setFile] = useState<File | null>(null);
@@ -50,6 +57,7 @@ export default function App() {
   const [waPhone, setWaPhone] = useState("");
   const [waMsg, setWaMsg] = useState("");
   const [waLink, setWaLink] = useState("");
+  const [isGeneratingWa, setIsGeneratingWa] = useState(false);
 
   // Poll for job status for the converter
   useEffect(() => {
@@ -132,9 +140,39 @@ export default function App() {
     }
   };
 
-  const generateWa = () => {
-    const cleanPhone = waPhone.replace(/\D/g,'');
-    setWaLink(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMsg)}`);
+  const generateWa = async () => {
+    if (!waPhone) {
+      showToast("Por favor ingresa un número de teléfono válido.");
+      return;
+    }
+    
+    setIsGeneratingWa(true);
+    try {
+      const cleanPhone = waPhone.replace(/\D/g, '');
+      const generatedUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMsg)}`;
+      
+      if (user) {
+        const linkId = Math.random().toString(36).substring(2, 8);
+        const userLinksRef = doc(collection(db, 'users', user.uid, 'whatsapp_links'), linkId);
+        
+        await setDoc(userLinksRef, {
+          phone: cleanPhone,
+          message: waMsg,
+          url: generatedUrl,
+          createdAt: new Date().toISOString()
+        });
+        
+        setWaLink(`ekit.link/${linkId}`);
+        showToast("¡Enlace generado y guardado en tu cuenta!");
+      } else {
+        setWaLink(generatedUrl);
+      }
+    } catch(e) {
+      console.error(e);
+      showToast("Hubo un problema al guardar el enlace.");
+    } finally {
+      setIsGeneratingWa(false);
+    }
   };
 
   const SIDEBAR_ITEMS = [
@@ -650,6 +688,13 @@ export default function App() {
 
       {/* Main Content Dashboard */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50/50 relative">
+        {toastMessage && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+            <CheckCircle className="w-5 h-5 text-green-400" />
+            <span className="font-bold text-sm tracking-wide">{toastMessage}</span>
+          </div>
+        )}
+
         <header className="h-16 bg-white border-b border-gray-100 flex items-center px-4 lg:px-8 justify-between lg:justify-end shrink-0">
            <button className="lg:hidden text-gray-500 p-2 rounded-lg hover:bg-gray-100" onClick={() => setIsMobileMenuOpen(true)}>
              <Menu className="w-6 h-6"/>
