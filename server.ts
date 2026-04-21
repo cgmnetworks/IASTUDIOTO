@@ -4,16 +4,25 @@ import multer from "multer";
 import AdmZip from "adm-zip";
 import { spawn } from "child_process";
 import fs from "fs/promises";
+import { existsSync, mkdirSync } from "fs";
 import path from "path";
 import crypto from "crypto";
+import { GoogleGenAI } from "@google/genai";
 
 const app = express();
 const PORT = 3000;
 
 const TEMP_UPLOADS = path.join(process.cwd(), ".tmp", "uploads");
 const TEMP_JOBS = path.join(process.cwd(), ".tmp", "jobs");
+const TEMP_SITES = path.join(process.cwd(), ".tmp", "sites");
 
 const upload = multer({ dest: TEMP_UPLOADS });
+
+if (!existsSync(TEMP_JOBS)) mkdirSync(TEMP_JOBS, { recursive: true });
+if (!existsSync(TEMP_UPLOADS)) mkdirSync(TEMP_UPLOADS, { recursive: true });
+if (!existsSync(TEMP_SITES)) mkdirSync(TEMP_SITES, { recursive: true });
+
+const aiConfigs = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : null;
 
 // Job tracking
 interface Job {
@@ -28,7 +37,6 @@ const jobs = new Map<string, Job>();
 
 function runCommand(cmd: string, args: string[], cwd: string, onData: (data: string) => void): Promise<void> {
   return new Promise((resolve, reject) => {
-    // We use shell: true to correctly resolve 'npm' on all platforms and environments
     const child = spawn(cmd, args, { cwd, shell: true });
     
     child.stdout.on("data", (data) => onData(data.toString()));
@@ -45,11 +53,82 @@ function runCommand(cmd: string, args: string[], cwd: string, onData: (data: str
   });
 }
 
-import { existsSync, mkdirSync } from "fs";
+// Extracted AI Sites logic
+app.post("/svc/generate-site", upload.single("flyer"), async (req, res) => {
+  if (!aiConfigs) {
+     return res.status(500).json({ error: "Gemini API no configurada" });
+  }
 
-// Ensure working directory exists on startup synchronously before any request!
-if (!existsSync(TEMP_JOBS)) mkdirSync(TEMP_JOBS, { recursive: true });
-if (!existsSync(TEMP_UPLOADS)) mkdirSync(TEMP_UPLOADS, { recursive: true });
+  const prompt = req.body.prompt || "";
+  const file = req.file;
+  
+  if (!prompt && !file) {
+     return res.status(400).json({ error: "Se requiere prompt o imagen para generar." });
+  }
+
+  try {
+     let content: any[] = [];
+     const systemInstruction = "Eres un experto creador web. Devuelve ESTRICTAMENTE SOLO código HTML con Tailwind CSS embebido (vía CDN <script src=\\"https://cdn.tailwindcss.com\\"></script>). No devuelvas markdown like ```html ni ninguna otra palabra extra, solo empieza con <!DOCTYPE html>.";
+     
+     content.push(`Crea una Landing Page moderna y responsiva basada en lo siguiente: ${prompt}. Genera algo bonito y estructurado que pueda vender la idea.`);
+
+     if (file) {
+        const fileData = await fs.readFile(file.path);
+        const mimeType = file.mimetype || "image/jpeg";
+        content.push({
+           inlineData: {
+              data: fileData.toString("base64"),
+              mimeType: mimeType
+           }
+        });
+     }
+
+     const response = await aiConfigs.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: content,
+        config: {
+           systemInstruction,
+           temperature: 0.7
+        }
+     });
+
+     let html = response.text || "<h1>Error generating content</h1>";
+     html = html.replace(/^```html\\n/g, '').replace(/```$/g, '').trim();
+
+     const siteId = crypto.randomUUID();
+     const siteDir = path.join(TEMP_SITES, siteId);
+     await fs.mkdir(siteDir, { recursive: true });
+     await fs.writeFile(path.join(siteDir, "index.html"), html);
+
+     const zip = new AdmZip();
+     zip.addLocalFile(path.join(siteDir, "index.html"));
+     const htaccessContent = `<IfModule mod_rewrite.c>\\n  RewriteEngine On\\n  RewriteBase /\\n  RewriteRule ^index\\\\.html$ - [L]\\n  RewriteCond %{REQUEST_FILENAME} !-f\\n  RewriteCond %{REQUEST_FILENAME} !-d\\n  RewriteRule . /index.html [L]\\n</IfModule>`;
+     zip.addFile(".htaccess", Buffer.from(htaccessContent, "utf8"));
+     
+     const zipPath = path.join(siteDir, "landing_page.zip");
+     zip.writeZip(zipPath);
+
+     if (file) {
+        fs.unlink(file.path).catch(() => {});
+     }
+
+     res.json({ id: siteId, html });
+  } catch (error: any) {
+     console.error("Gemini Error:", error);
+     res.status(500).json({ error: "Error en la IA generativa." });
+  }
+});
+
+app.get("/svc/download-site/:siteId", async (req, res) => {
+   const siteId = req.params.siteId;
+   const zipPath = path.join(TEMP_SITES, siteId, "landing_page.zip");
+   try {
+     await fs.access(zipPath);
+     res.download(zipPath, "landing_page.zip");
+   } catch {
+     res.status(404).send("Sitio no encontrado o expirado.");
+   }
+});
 
 // API endpoint to capture the upload and start conversion
 app.post("/svc/convert", upload.single("projectZip"), async (req, res) => {
@@ -117,7 +196,7 @@ app.post("/svc/convert", upload.single("projectZip"), async (req, res) => {
       }
       
       if (projectRoot !== srcDir) {
-        log(`Carpeta raíz detectada: ${path.relative(srcDir, projectRoot)}`);
+        log(\`Carpeta raíz detectada: \${path.relative(srcDir, projectRoot)}\`);
       }
 
       updateStatus("installing");
@@ -125,10 +204,9 @@ app.post("/svc/convert", upload.single("projectZip"), async (req, res) => {
       await runCommand("npm", ["install"], projectRoot, log);
 
       updateStatus("building");
-      log(`Compilando proyecto (Destino: ${format.toUpperCase()})...`);
+      log(\`Compilando proyecto (Destino: \${format.toUpperCase()})...\`);
       
       if (format === "wordpress") {
-        // WordPress plugins need relative asset paths as they reside in /wp-content/plugins/...
         await runCommand("npx", ["vite", "build", "--base=./"], projectRoot, log);
       } else {
         await runCommand("npm", ["run", "build"], projectRoot, log);
@@ -145,7 +223,6 @@ app.post("/svc/convert", upload.single("projectZip"), async (req, res) => {
 
       if (format === "wordpress") {
         log("Generando estructura de Plugin de WordPress...");
-        const pluginName = "aistudio-app";
         const pluginDirName = "aistudio-app";
         
         let jsFile = "", cssFile = "";
@@ -158,7 +235,7 @@ app.post("/svc/convert", upload.single("projectZip"), async (req, res) => {
           log("Advertencia: No se pudo leer la carpeta de assets generada.");
         }
 
-        const wpPluginCode = `<?php
+        const wpPluginCode = \`<?php
 /**
  * Plugin Name: AI Studio App Integration
  * Description: Proyecto web generado desde Google AI Studio, insertable en WordPress.
@@ -170,8 +247,8 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 function aistudio_app_enqueue_assets() {
     $plugin_url = plugin_dir_url(__FILE__);
-    wp_enqueue_script('aistudio-app-js', $plugin_url . 'dist/assets/${jsFile}', array(), '1.0', true);
-    ${cssFile ? `wp_enqueue_style('aistudio-app-css', $plugin_url . 'dist/assets/${cssFile}', array(), '1.0');` : ''}
+    wp_enqueue_script('aistudio-app-js', $plugin_url . 'dist/assets/\${jsFile}', array(), '1.0', true);
+    \${cssFile ? \\\`wp_enqueue_style('aistudio-app-css', $plugin_url . 'dist/assets/\${cssFile}', array(), '1.0');\\\` : ''}
 }
 add_action('wp_enqueue_scripts', 'aistudio_app_enqueue_assets');
 
@@ -189,28 +266,19 @@ function aistudio_app_shortcode() {
 }
 // Uso: [aistudio_app]
 add_shortcode('aistudio_app', 'aistudio_app_shortcode');
-`;
+\`;
         
-        // Write PHP entry file
         const phpPluginPath = path.join(workDir, "aistudio-app.php");
         await fs.writeFile(phpPluginPath, wpPluginCode);
 
-        // Add to zip within folder `aistudio-app/`
-        outZipFile.addLocalFolder(distDir, `${pluginDirName}/dist`);
+        outZipFile.addLocalFolder(distDir, pluginDirName + "/dist");
         outZipFile.addLocalFile(phpPluginPath, pluginDirName);
         
         log("Plugin empaquetado correctamente. (Usa el shortcode [aistudio_app])");
 
       } else {
         log("Agregando .htaccess para cPanel/Apache SPA Routing...");
-        const htaccessContent = `<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
-  RewriteRule ^index\\.html$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /index.html [L]
-</IfModule>`;
+        const htaccessContent = \`<IfModule mod_rewrite.c>\\n  RewriteEngine On\\n  RewriteBase /\\n  RewriteRule ^index\\\\.html$ - [L]\\n  RewriteCond %{REQUEST_FILENAME} !-f\\n  RewriteCond %{REQUEST_FILENAME} !-d\\n  RewriteRule . /index.html [L]\\n</IfModule>\`;
         await fs.writeFile(path.join(distDir, ".htaccess"), htaccessContent);
         
         log("Comprimiendo carpeta dist/... para descarga");
@@ -226,7 +294,7 @@ add_shortcode('aistudio_app', 'aistudio_app_shortcode');
       jobs.set(jobId, finalJob);
 
     } catch (err: any) {
-      log(`Error: ${err.message}`);
+      log(\`Error: \${err.message}\`);
       const failedJob = jobs.get(jobId)!;
       failedJob.status = "error";
       failedJob.error = err.message;
@@ -243,7 +311,6 @@ app.get("/svc/job/:jobId", (req, res) => {
   if (!job) {
     return res.status(404).json({ error: "Trabajo no encontrado." });
   }
-  // Optional: clear standard noise from npm logs, but we want a terminal feel
   res.json(job);
 });
 
@@ -254,13 +321,7 @@ app.get("/svc/download/:jobId", (req, res) => {
     return res.status(400).json({ error: "El archivo no está listo para su descarga." });
   }
 
-  res.download(job.outZip, "cpanel_website.zip", (err) => {
-    if (!err) {
-      // Optional: Cleanup outZip after successful download
-      // We might have multiple users hitting this server, so keeping it around temporarily is fine.
-      // But clearing it avoids filling disk.
-    }
-  });
+  res.download(job.outZip, "cpanel_website.zip");
 });
 
 // Integrating Vite for the frontend UI
@@ -272,7 +333,6 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    // In production, fallback to generated dist if available
     const staticPath = path.resolve(process.cwd(), "dist");
     app.use(express.static(staticPath));
     app.get("*", (req, res) => {
@@ -281,7 +341,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Servidor en ejecución en http://localhost:${PORT}`);
+    console.log(\`🚀 Servidor en ejecución en http://localhost:\${PORT}\`);
   });
 }
 

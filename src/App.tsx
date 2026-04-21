@@ -59,6 +59,67 @@ export default function App() {
   const [waLink, setWaLink] = useState("");
   const [isGeneratingWa, setIsGeneratingWa] = useState(false);
 
+  // --- Hosting State ---
+  const [showHostingModal, setShowHostingModal] = useState(false);
+  const [hPlan, setHPlan] = useState<"Básico" | "Pro" | "Master">("Básico");
+  const [hName, setHName] = useState("");
+  const [hEmail, setHEmail] = useState("");
+  const [hDomainType, setHDomainType] = useState<"own" | "subdomain">("subdomain");
+  const [hDomain, setHDomain] = useState("");
+  const [hSubdomainExt, setHSubdomainExt] = useState("sitiowebpro.com");
+
+  // --- Landing Generator State ---
+  const [lPrompt, setLPrompt] = useState("");
+  const [lFlyer, setLFlyer] = useState<File | null>(null);
+  const [isGeneratingSite, setIsGeneratingSite] = useState(false);
+  const [generatedSiteData, setGeneratedSiteData] = useState<{ id: string, html: string } | null>(null);
+
+  const handleFlyerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setLFlyer(e.target.files[0]);
+    }
+  };
+
+  const generateLanding = async () => {
+    if (!lPrompt && !lFlyer) {
+      showToast("Por favor, ingresa una descripción o sube una imagen.");
+      return;
+    }
+    
+    setIsGeneratingSite(true);
+    setGeneratedSiteData(null);
+    try {
+      const formData = new FormData();
+      formData.append("prompt", lPrompt);
+      if (lFlyer) {
+        formData.append("flyer", lFlyer);
+      }
+      
+      const res = await fetch("/svc/generate-site", { method: "POST", body: formData });
+      if (!res.ok) {
+        throw new Error("Error generando el sitio. Revisa la consola o intenta de nuevo.");
+      }
+      const data = await res.json();
+      setGeneratedSiteData({ id: data.id, html: data.html });
+      
+      if (user) {
+        const siteId = data.id || Math.random().toString(36).substring(2, 8);
+        const userSitesRef = doc(collection(db, 'users', user.uid, 'websites'), siteId);
+        await setDoc(userSitesRef, {
+          prompt: lPrompt,
+          status: "completed",
+          createdAt: new Date().toISOString()
+        });
+      }
+      showToast("¡Tu sitio web fue generado con éxito!");
+    } catch(e: any) {
+      console.error(e);
+      showToast(e.message || "Fallo inesperado al generar el sitio.");
+    } finally {
+      setIsGeneratingSite(false);
+    }
+  };
+
   // Poll for job status for the converter
   useEffect(() => {
     if (!jobId) return;
@@ -308,41 +369,53 @@ export default function App() {
             <textarea 
               placeholder="Ej: Es una pizzería llamada 'Don Luigi' en Ciudad de México, abierta de 9 a 9..." 
               className="w-full border-none rounded-xl p-4 ring-2 ring-indigo-200 focus:ring-indigo-500 outline-none h-32 transition-all resize-none bg-white"
+              value={lPrompt}
+              onChange={(e) => setLPrompt(e.target.value)}
             />
           </div>
 
           <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
              <label className="block text-sm font-bold text-gray-800 mb-2">2. Sube un Flyer (Opcional)</label>
              <p className="text-xs text-gray-500 mb-3">Nuestra IA leerá textos, precios y colores de tu imagen.</p>
-             <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:bg-gray-100 transition-all flex flex-col items-center">
-                <UploadCloud className="w-8 h-8 text-gray-400 mb-2" />
-                <span className="text-sm font-bold text-gray-600">Subir Imagen o PDF</span>
-             </div>
+             <label className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:bg-gray-100 transition-all flex flex-col items-center relative overflow-hidden">
+                <UploadCloud className={`w-8 h-8 mb-2 ${lFlyer ? 'text-indigo-500' : 'text-gray-400'}`} />
+                <span className={`text-sm font-bold ${lFlyer ? 'text-indigo-700' : 'text-gray-600'}`}>{lFlyer ? lFlyer.name : "Subir Imagen o PDF"}</span>
+                <input type="file" className="opacity-0 absolute inset-0 w-full h-full cursor-pointer" accept="image/*,.pdf" onChange={handleFlyerUpload} />
+             </label>
           </div>
 
-          <button className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black rounded-xl hover:opacity-90 transition-all text-lg shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2">
-            <Rocket className="w-5 h-5"/> Generar Super Sitio Web
+          <button onClick={generateLanding} disabled={isGeneratingSite || (!lPrompt && !lFlyer)} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 disabled:opacity-50 text-white font-black rounded-xl hover:opacity-90 transition-all text-lg shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2">
+            {isGeneratingSite ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5"/>} 
+            {isGeneratingSite ? "Generando con IA..." : "Generar Super Sitio Web"}
           </button>
         </div>
 
         {/* Preview Panel Mockup */}
-        <div className="bg-gray-900 rounded-2xl p-4 border-4 border-gray-800 shadow-2xl flex flex-col h-[500px]">
-           <div className="flex items-center gap-2 mb-3">
+        <div className="bg-gray-900 rounded-2xl p-4 border-4 border-gray-800 shadow-2xl flex flex-col h-[500px] relative overflow-hidden">
+           <div className="flex items-center gap-2 mb-3 z-10 relative">
               <div className="w-3 h-3 rounded-full bg-red-500"></div>
               <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
               <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <div className="ml-4 text-xs font-mono text-gray-400 bg-gray-800 px-3 py-1 rounded-md">Vista Previa - pizza-don-luigi.html</div>
+              <div className="ml-4 text-xs font-mono text-gray-400 bg-gray-800 px-3 py-1 rounded-md">Vista Previa AI</div>
            </div>
            
-           <div className="flex-1 bg-white rounded-lg flex flex-col items-center justify-center text-center p-6 opacity-50 relative overflow-hidden group">
-              <LayoutTemplate className="w-16 h-16 text-gray-300 mb-4" />
-              <p className="text-gray-400 font-medium">El sitio generado aparecerá aquí.</p>
+           <div className="flex-1 bg-white rounded-lg flex flex-col relative overflow-hidden group">
+              {!generatedSiteData ? (
+                 <div className="flex flex-col items-center justify-center h-full opacity-50 p-6 text-center">
+                    <LayoutTemplate className="w-16 h-16 text-gray-300 mb-4" />
+                    <p className="text-gray-400 font-medium">El sitio generado aparecerá aquí.</p>
+                 </div>
+              ) : (
+                 <iframe srcDoc={generatedSiteData.html} className="w-full h-full border-none" title="Sitio Generado"></iframe>
+              )}
               
-              <div className="absolute inset-0 bg-indigo-900/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm">
-                 <button className="px-6 py-3 bg-white text-indigo-700 font-bold rounded-xl shadow-xl flex items-center gap-2">
-                   <Download className="w-5 h-5" /> Descargar ZIP cPanel
-                 </button>
-              </div>
+              {generatedSiteData && (
+                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-gray-900/80 to-transparent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm">
+                   <a href={`/svc/download-site/${generatedSiteData.id}`} className="px-6 py-3 bg-white text-indigo-700 font-bold rounded-xl shadow-xl flex items-center gap-2 hover:bg-gray-50 transition-colors">
+                     <Download className="w-5 h-5" /> Descargar ZIP cPanel
+                   </a>
+                </div>
+              )}
            </div>
         </div>
       </div>
@@ -426,7 +499,91 @@ export default function App() {
   );
 
   const renderHosting = () => (
-    <div className="max-w-6xl animate-in fade-in pb-16">
+    <div className="max-w-6xl animate-in fade-in pb-16 relative">
+       {showHostingModal && (
+         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
+           <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl relative">
+              <button onClick={() => setShowHostingModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 bg-gray-50 rounded-full p-2">
+                 <X className="w-5 h-5"/>
+              </button>
+              
+              <h2 className="text-2xl font-black text-gray-900 mb-2">Finaliza tu Plan {hPlan}</h2>
+              <p className="text-gray-500 text-sm mb-6 pb-6 border-b border-gray-100">Completa tus datos para asignarte el espacio en nuestros servidores.</p>
+
+              <div className="space-y-4 mb-8">
+                 <div>
+                   <label className="block text-sm font-bold text-gray-700 mb-1">Nombre Completo</label>
+                   <input type="text" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow" placeholder="Ej. Carlos Granados" value={hName} onChange={(e) => setHName(e.target.value)} />
+                 </div>
+                 <div>
+                   <label className="block text-sm font-bold text-gray-700 mb-1">Correo Electrónico</label>
+                   <input type="email" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow" placeholder="correo@ejemplo.com" value={hEmail} onChange={(e) => setHEmail(e.target.value)} />
+                 </div>
+                 
+                 <div>
+                   <label className="block text-sm font-bold text-gray-700 mb-2 mt-4">¿Dominio Propio o Subdominio?</label>
+                   <div className="grid grid-cols-2 gap-3 mb-3">
+                     <button onClick={() => setHDomainType('own')} className={`py-3 rounded-xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${hDomainType === 'own' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
+                        Mío Propio
+                     </button>
+                     <button onClick={() => setHDomainType('subdomain')} className={`py-3 rounded-xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition-colors relative ${hDomainType === 'subdomain' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
+                        Subdominio <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm">+$10 USD</span>
+                     </button>
+                   </div>
+                 </div>
+
+                 {hDomainType === 'own' && (
+                    <div className="animate-in slide-in-from-top-2">
+                       <label className="block text-sm font-semibold text-gray-600 mb-1">¿Qué dominio vincularás?</label>
+                       <input type="text" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 mb-2" placeholder="ejemplo.com" value={hDomain} onChange={(e) => setHDomain(e.target.value)} />
+                       <div className="text-xs text-amber-600 bg-amber-50 p-3 rounded-lg flex items-start gap-2">
+                          <AlertTriangle className="w-4 h-4 shrink-0" />
+                          <p><b>Nota:</b> No vendemos dominios personalizados. Puedes adquirir el tuyo en nuestro <span className="underline font-bold cursor-pointer" onClick={() => {setShowHostingModal(false); setActiveTab('marketplace')}}>Marketplace de afiliados</span> y luego te ayudamos a conectarlo gratis.</p>
+                       </div>
+                    </div>
+                 )}
+
+                 {hDomainType === 'subdomain' && (
+                    <div className="animate-in slide-in-from-top-2 flex items-center gap-2">
+                       <input type="text" className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="minegocio" value={hDomain} onChange={(e) => setHDomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))} />
+                       <span className="text-gray-400 font-black">.</span>
+                       <select className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 text-gray-700 font-medium cursor-pointer" value={hSubdomainExt} onChange={(e) => setHSubdomainExt(e.target.value)}>
+                          <option value="sitiowebpro.com">sitiowebpro.com</option>
+                          <option value="websiteya.com">websiteya.com</option>
+                          <option value="hostsyte.com">hostsyte.com</option>
+                       </select>
+                    </div>
+                 )}
+              </div>
+
+              <div className="flex flex-col gap-3">
+                 <button 
+                  disabled={!hName || !hEmail || !hDomain}
+                  onClick={() => {
+                     const basePrice = hPlan === "Básico" ? 19.97 : hPlan === "Pro" ? 34.97 : 44.97;
+                     const targetPrice = hDomainType === "subdomain" ? basePrice + 10 : basePrice;
+                     const finalDomainStr = hDomainType === "subdomain" ? `${hDomain}.${hSubdomainExt}` : hDomain;
+                     const item_name = `Hosting ${hPlan} + ${finalDomainStr}`;
+                     window.open(`https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=paypal@emprendekitai.com&item_name=${encodeURIComponent(item_name)}&amount=${targetPrice}&currency_code=USD`, '_blank');
+                  }}
+                  className="w-full bg-[#0070ba] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#005ea6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
+                   Pagar con PayPal
+                 </button>
+                 <button 
+                  disabled={!hName || !hEmail || !hDomain}
+                  onClick={() => {
+                     const finalDomainStr = hDomainType === "subdomain" ? `${hDomain}.${hSubdomainExt}` : hDomain;
+                     const msg = `Hola, EmprendekitIa,tengo una consulta mi nombre es: ${hName} mi correo es ${hEmail} quiero el plan: ${hPlan} con el dominio: ${finalDomainStr}`;
+                     window.open(`https://wa.me/50762417266?text=${encodeURIComponent(msg)}`, '_blank');
+                  }}
+                  className="w-full border-2 border-green-500 text-green-600 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                   <MessageCircle className="w-5 h-5"/> Reportar Pago por WhatsApp
+                 </button>
+              </div>
+           </div>
+         </div>
+       )}
+
        <div className="text-center mb-12">
           <h2 className="text-4xl font-black text-gray-900 mb-4">Elige el plan que se adapta a tu momento actual</h2>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
@@ -438,7 +595,7 @@ export default function App() {
              <h3 className="text-2xl font-bold text-gray-900">Básico</h3>
              <p className="text-sm text-gray-500 mt-2 mb-6 h-10">Perfecto para comenzar tu presencia digital</p>
              <div className="mb-6">
-                <span className="text-4xl font-black text-gray-900">$9.97</span>
+                <span className="text-4xl font-black text-gray-900">$19.97</span>
                 <span className="text-gray-500 font-medium">/año</span>
                 <p className="text-xs text-green-600 font-bold mt-1">Sin costos adicionales</p>
              </div>
@@ -453,7 +610,7 @@ export default function App() {
                 <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Soporte técnico WhatsApp</li>
                 <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Garantía de 7 días</li>
              </ul>
-             <a href="https://paypal.me/emprendekitai" target="_blank" rel="noreferrer" className="w-full py-4 rounded-xl font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 mt-auto shadow-sm transition-colors border border-indigo-100">Comenzar con Básico →</a>
+             <button onClick={() => { setHPlan("Básico"); setShowHostingModal(true); }} className="w-full py-4 rounded-xl font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 mt-auto shadow-sm transition-colors border border-indigo-100">Comenzar con Básico →</button>
           </div>
 
           <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center relative transform lg:-translate-y-4">
@@ -461,7 +618,7 @@ export default function App() {
              <h3 className="text-2xl font-bold text-white mt-4">Pro</h3>
              <p className="text-sm text-indigo-200 mt-2 mb-6 h-10">El preferido por emprendedores y negocios</p>
              <div className="mb-6">
-                <span className="text-4xl font-black text-white">$24.97</span>
+                <span className="text-4xl font-black text-white">$34.97</span>
                 <span className="text-indigo-200 font-medium">/año</span>
                 <p className="text-xs text-amber-400 font-bold mt-1">Ahorra vs otros hostings</p>
              </div>
@@ -476,14 +633,14 @@ export default function App() {
                 <li className="flex gap-3 text-sm"><CheckCircle className="w-5 h-5 text-amber-400 shrink-0"/> Soporte prioritario WhatsApp</li>
                 <li className="flex gap-3 text-sm"><CheckCircle className="w-5 h-5 text-amber-400 shrink-0"/> Garantía de 7 días</li>
              </ul>
-             <a href="https://paypal.me/emprendekitai" target="_blank" rel="noreferrer" className="w-full py-4 rounded-xl font-bold bg-white text-indigo-900 hover:bg-gray-100 shadow-lg mt-auto transition-colors">Activar Plan Pro →</a>
+             <button onClick={() => { setHPlan("Pro"); setShowHostingModal(true); }} className="w-full py-4 rounded-xl font-bold bg-white text-indigo-900 hover:bg-gray-100 shadow-lg mt-auto transition-colors">Activar Plan Pro →</button>
           </div>
 
           <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm flex flex-col items-center text-center">
              <h3 className="text-2xl font-bold text-gray-900">Master</h3>
              <p className="text-sm text-gray-500 mt-2 mb-6 h-10">Recursos ilimitados para agencias y empresas</p>
              <div className="mb-6">
-                <span className="text-4xl font-black text-gray-900">$34.97</span>
+                <span className="text-4xl font-black text-gray-900">$44.97</span>
                 <span className="text-gray-500 font-medium">/año</span>
                 <p className="text-xs text-indigo-600 font-bold mt-1">La solución completa</p>
              </div>
@@ -498,7 +655,7 @@ export default function App() {
                 <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Soporte VIP WA y llamadas</li>
                 <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Garantía de 7 días</li>
              </ul>
-             <a href="https://paypal.me/emprendekitai" target="_blank" rel="noreferrer" className="w-full py-4 rounded-xl font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-sm mt-auto transition-colors border border-indigo-100">Activar Plan Master →</a>
+             <button onClick={() => { setHPlan("Master"); setShowHostingModal(true); }} className="w-full py-4 rounded-xl font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-sm mt-auto transition-colors border border-indigo-100">Activar Plan Master →</button>
           </div>
        </div>
     </div>
@@ -606,7 +763,7 @@ export default function App() {
   };
 
   const floatingWhatsAppButton = (
-    <a href="https://wa.me/50762417266" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] hover:scale-110 transition-transform z-50 flex items-center justify-center animate-bounce" title="Soporte WhatsApp">
+    <a href="https://wa.me/50762417266?text=Hola,%20EmprendekitIa,tengo%20una%20consulta%20mi%20nombre%20es%3A%20" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] hover:scale-110 transition-transform z-50 flex items-center justify-center animate-bounce" title="Soporte WhatsApp">
       <MessageCircle className="w-8 h-8" />
     </a>
   );
