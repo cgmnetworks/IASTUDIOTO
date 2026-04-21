@@ -125,7 +125,7 @@ export default function App() {
   };
 
   const SIDEBAR_ITEMS = [
-    { id: "converter", label: "Convertidor de ZIP", icon: <FileArchive className="w-5 h-5"/> },
+    { id: "converter", label: "STUDIOIACONVERTER", icon: <FileArchive className="w-5 h-5"/> },
     { id: "landings", label: "Generador Landings", icon: <LayoutTemplate className="w-5 h-5"/> },
     { id: "biolinks", label: "Creador Bio-Links", icon: <LinkIcon className="w-5 h-5"/> },
     { id: "whatsapp", label: "Generador WhatsApp", icon: <MessageCircle className="w-5 h-5"/> },
@@ -139,7 +139,7 @@ export default function App() {
         <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 scale-110">
           <FileType className="w-8 h-8" />
         </div>
-        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600 tracking-tight">Convertidor IA</h1>
+        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600 tracking-tight">STUDIOIACONVERTER</h1>
         <p className="text-gray-500 text-lg max-w-lg mx-auto">
           Convierte archivos <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded-md text-sm">.zip</span> de IA Studio a sitios HTML o Plugins de WP.
         </p>
@@ -372,51 +372,79 @@ export default function App() {
   );
 
   const renderHosting = () => (
-    <div className="max-w-4xl animate-in fade-in pt-4">
-       <div className="bg-gradient-to-br from-indigo-700 to-purple-800 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
-          
-          <span className="inline-flex items-center gap-2 bg-indigo-900/50 text-indigo-200 text-sm font-bold px-4 py-2 rounded-full mb-6 relative z-10 backdrop-blur-sm border border-indigo-500/30">
-            <Rocket className="w-4 h-4" /> Alianza Exclusiva EmprendeKit IA
-          </span>
-          <h2 className="text-4xl lg:text-5xl font-black mb-6 leading-tight relative z-10">Lanza Tu Proyecto <br/>a las Ligas Mayores</h2>
-          <p className="text-indigo-200 mb-10 max-w-xl text-lg relative z-10 leading-relaxed">
-            Hemos negociado los mejores planes de alojamiento para las webs que extraes desde nuestra herramienta. Servidores ultra-rápidos optimizados para negocios digitales.
+    <div className="max-w-6xl animate-in fade-in pb-16">
+       <div className="text-center mb-12">
+          <h2 className="text-4xl font-black text-gray-900 mb-4">Elige el plan que se adapta a tu momento actual</h2>
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            Precios reales, sin sorpresas ocultas. Todos los planes incluyen SSL, cPanel y soporte por WhatsApp desde el primer día.
           </p>
-          
-          <div className="grid md:grid-cols-2 gap-6 text-gray-900 relative z-10">
-             <div className="bg-white rounded-3xl p-8 shadow-xl transform transition-transform hover:-translate-y-2">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="text-xl font-bold text-gray-800">Plan Starter Web</div>
-                  <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-md uppercase">Oferta</span>
-                </div>
-                <div className="text-4xl font-black text-indigo-600 mb-2">$2.99<span className="text-lg font-medium text-gray-500">/mes</span></div>
-                <p className="text-gray-500 text-sm mb-6 border-b pb-6">Perfecto para tu primer proyecto web o landing page.</p>
-                
-                <ul className="space-y-4 mb-8">
-                   <li className="flex gap-3 items-center font-medium text-gray-700"><CheckCircle className="w-5 h-5 text-green-500"/> Dominio Gratuito 1 año</li>
-                   <li className="flex gap-3 items-center font-medium text-gray-700"><CheckCircle className="w-5 h-5 text-green-500"/> SSL Integrado Siempre</li>
-                   <li className="flex gap-3 items-center font-medium text-gray-700"><CheckCircle className="w-5 h-5 text-green-500"/> cPanel Fácil de Usar</li>
-                   <li className="flex gap-3 items-center font-medium text-gray-700"><CheckCircle className="w-5 h-5 text-green-500"/> Correos Profesionales</li>
-                </ul>
-                <a href="https://www.hostinger.es/?referido=prueba-ia-converter" target="_blank" rel="noreferrer" className="block text-center w-full bg-indigo-600 text-white font-bold text-lg py-4 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">Reclamar Descuento</a>
+       </div>
+       <div className="grid lg:grid-cols-3 gap-8 items-start">
+          <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm flex flex-col items-center text-center">
+             <h3 className="text-2xl font-bold text-gray-900">Básico</h3>
+             <p className="text-sm text-gray-500 mt-2 mb-6 h-10">Perfecto para comenzar tu presencia digital</p>
+             <div className="mb-6">
+                <span className="text-4xl font-black text-gray-900">$9.97</span>
+                <span className="text-gray-500 font-medium">/año</span>
+                <p className="text-xs text-green-600 font-bold mt-1">Sin costos adicionales</p>
              </div>
-             
-             <div className="bg-indigo-50 border-2 border-indigo-200 rounded-3xl p-8 shadow-xl transform transition-transform hover:-translate-y-2 opacity-90">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="text-xl font-bold text-gray-800">Negocios Pro</div>
-                </div>
-                <div className="text-4xl font-black text-gray-800 mb-2">$5.99<span className="text-lg font-medium text-gray-500">/mes</span></div>
-                <p className="text-gray-600 text-sm mb-6 border-b border-indigo-200 pb-6">Para agencias, WordPress y tiendas en línea con más tráfico.</p>
-                
-                <ul className="space-y-4 mb-8">
-                   <li className="flex gap-3 items-center font-medium text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500"/> 100 Sitios Web Incluidos</li>
-                   <li className="flex gap-3 items-center font-medium text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500"/> Rendimiento Mejorado</li>
-                   <li className="flex gap-3 items-center font-medium text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500"/> Backups Diarios Automáticos</li>
-                   <li className="flex gap-3 items-center font-medium text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500"/> CDN para Velocidad Global</li>
-                </ul>
-                <a href="https://www.hostinger.es/?referido=prueba-ia-converter" target="_blank" rel="noreferrer" className="block text-center w-full bg-white text-indigo-700 border-2 border-indigo-200 font-bold text-lg py-4 rounded-xl hover:bg-indigo-100 transition-colors">Ver Detalles del Plan</a>
+             <ul className="space-y-4 mb-8 text-left w-full">
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Hasta 10 dominios alojados</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> 1 TB SSD NVMe</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Ancho de banda ilimitado</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Hasta 10 correos por dominio</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> cPanel incluido</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> SSL Gratis en dominios</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Seguridad reforzada</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Soporte técnico WhatsApp</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Garantía de 7 días</li>
+             </ul>
+             <a href="https://paypal.me/emprendekitai" target="_blank" rel="noreferrer" className="w-full py-4 rounded-xl font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 mt-auto shadow-sm transition-colors border border-indigo-100">Comenzar con Básico →</a>
+          </div>
+
+          <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center relative transform lg:-translate-y-4">
+             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black px-4 py-1 rounded-full text-sm shadow-lg">⭐ Más popular</div>
+             <h3 className="text-2xl font-bold text-white mt-4">Pro</h3>
+             <p className="text-sm text-indigo-200 mt-2 mb-6 h-10">El preferido por emprendedores y negocios</p>
+             <div className="mb-6">
+                <span className="text-4xl font-black text-white">$24.97</span>
+                <span className="text-indigo-200 font-medium">/año</span>
+                <p className="text-xs text-amber-400 font-bold mt-1">Ahorra vs otros hostings</p>
              </div>
+             <ul className="space-y-4 mb-8 text-left w-full text-indigo-100">
+                <li className="flex gap-3 text-sm"><CheckCircle className="w-5 h-5 text-amber-400 shrink-0"/> Hasta 100 dominios alojados</li>
+                <li className="flex gap-3 text-sm"><CheckCircle className="w-5 h-5 text-amber-400 shrink-0"/> 2 TB SSD NVMe</li>
+                <li className="flex gap-3 text-sm"><CheckCircle className="w-5 h-5 text-amber-400 shrink-0"/> Ancho de banda ilimitado</li>
+                <li className="flex gap-3 text-sm"><CheckCircle className="w-5 h-5 text-amber-400 shrink-0"/> Hasta 100 correos por dominio</li>
+                <li className="flex gap-3 text-sm"><CheckCircle className="w-5 h-5 text-amber-400 shrink-0"/> cPanel incluido</li>
+                <li className="flex gap-3 text-sm"><CheckCircle className="w-5 h-5 text-amber-400 shrink-0"/> SSL Gratis en dominios</li>
+                <li className="flex gap-3 text-sm"><CheckCircle className="w-5 h-5 text-amber-400 shrink-0"/> Seguridad reforzada avanzada</li>
+                <li className="flex gap-3 text-sm"><CheckCircle className="w-5 h-5 text-amber-400 shrink-0"/> Soporte prioritario WhatsApp</li>
+                <li className="flex gap-3 text-sm"><CheckCircle className="w-5 h-5 text-amber-400 shrink-0"/> Garantía de 7 días</li>
+             </ul>
+             <a href="https://paypal.me/emprendekitai" target="_blank" rel="noreferrer" className="w-full py-4 rounded-xl font-bold bg-white text-indigo-900 hover:bg-gray-100 shadow-lg mt-auto transition-colors">Activar Plan Pro →</a>
+          </div>
+
+          <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm flex flex-col items-center text-center">
+             <h3 className="text-2xl font-bold text-gray-900">Master</h3>
+             <p className="text-sm text-gray-500 mt-2 mb-6 h-10">Recursos ilimitados para agencias y empresas</p>
+             <div className="mb-6">
+                <span className="text-4xl font-black text-gray-900">$34.97</span>
+                <span className="text-gray-500 font-medium">/año</span>
+                <p className="text-xs text-indigo-600 font-bold mt-1">La solución completa</p>
+             </div>
+             <ul className="space-y-4 mb-8 text-left w-full">
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Dominios ilimitados alojados</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Almacenamiento NVMe ilimitado</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Ancho de banda ilimitado</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Correos ilimitados</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> cPanel incluido</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> SSL Gratis en dominios</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Seguridad reforzada premium</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Soporte VIP WA y llamadas</li>
+                <li className="flex gap-3 text-sm text-gray-700"><CheckCircle className="w-5 h-5 text-indigo-500 shrink-0"/> Garantía de 7 días</li>
+             </ul>
+             <a href="https://paypal.me/emprendekitai" target="_blank" rel="noreferrer" className="w-full py-4 rounded-xl font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-sm mt-auto transition-colors border border-indigo-100">Activar Plan Master →</a>
           </div>
        </div>
     </div>
@@ -484,7 +512,7 @@ export default function App() {
               <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
                 <FileArchive className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Convertidor IA a Web</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">STUDIOIACONVERTER</h3>
               <p className="text-gray-500 leading-relaxed">Sube el ZIP que te generó Google AI Studio o ChatGPT y obten los archivos para cPanel o un Plugin de WordPress instantáneamente.</p>
            </div>
 
@@ -523,12 +551,24 @@ export default function App() {
     }
   };
 
+  const floatingWhatsAppButton = (
+    <a href="https://wa.me/50762417266" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] hover:scale-110 transition-transform z-50 flex items-center justify-center animate-bounce" title="Soporte WhatsApp">
+      <MessageCircle className="w-8 h-8" />
+    </a>
+  );
+
   if (!isAuthenticated) {
-    return renderLandingPage();
+    return (
+      <>
+        {renderLandingPage()}
+        {floatingWhatsAppButton}
+      </>
+    );
   }
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+      {floatingWhatsAppButton}
       
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
