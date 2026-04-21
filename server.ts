@@ -68,7 +68,7 @@ app.post("/svc/generate-site", upload.single("flyer"), async (req, res) => {
 
   try {
      let content: any[] = [];
-     const systemInstruction = "Eres un experto creador web. Devuelve ESTRICTAMENTE SOLO código HTML con Tailwind CSS embebido (vía CDN <script src=\\"https://cdn.tailwindcss.com\\"></script>). No devuelvas markdown like ```html ni ninguna otra palabra extra, solo empieza con <!DOCTYPE html>.";
+     const systemInstruction = `Eres un experto creador web. Devuelve ESTRICTAMENTE SOLO código HTML con Tailwind CSS embebido (vía CDN <script src="https://cdn.tailwindcss.com"></script>). No devuelvas markdown like \`\`\`html ni ninguna otra palabra extra, solo empieza con <!DOCTYPE html>.`;
      
      content.push(`Crea una Landing Page moderna y responsiva basada en lo siguiente: ${prompt}. Genera algo bonito y estructurado que pueda vender la idea.`);
 
@@ -93,7 +93,7 @@ app.post("/svc/generate-site", upload.single("flyer"), async (req, res) => {
      });
 
      let html = response.text || "<h1>Error generating content</h1>";
-     html = html.replace(/^```html\\n/g, '').replace(/```$/g, '').trim();
+     html = html.replace(/^```html\n/g, '').replace(/```$/g, '').trim();
 
      const siteId = crypto.randomUUID();
      const siteDir = path.join(TEMP_SITES, siteId);
@@ -102,7 +102,14 @@ app.post("/svc/generate-site", upload.single("flyer"), async (req, res) => {
 
      const zip = new AdmZip();
      zip.addLocalFile(path.join(siteDir, "index.html"));
-     const htaccessContent = `<IfModule mod_rewrite.c>\\n  RewriteEngine On\\n  RewriteBase /\\n  RewriteRule ^index\\\\.html$ - [L]\\n  RewriteCond %{REQUEST_FILENAME} !-f\\n  RewriteCond %{REQUEST_FILENAME} !-d\\n  RewriteRule . /index.html [L]\\n</IfModule>`;
+     const htaccessContent = `<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>`;
      zip.addFile(".htaccess", Buffer.from(htaccessContent, "utf8"));
      
      const zipPath = path.join(siteDir, "landing_page.zip");
@@ -196,7 +203,7 @@ app.post("/svc/convert", upload.single("projectZip"), async (req, res) => {
       }
       
       if (projectRoot !== srcDir) {
-        log(\`Carpeta raíz detectada: \${path.relative(srcDir, projectRoot)}\`);
+        log(`Carpeta raíz detectada: ${path.relative(srcDir, projectRoot)}`);
       }
 
       updateStatus("installing");
@@ -204,7 +211,7 @@ app.post("/svc/convert", upload.single("projectZip"), async (req, res) => {
       await runCommand("npm", ["install"], projectRoot, log);
 
       updateStatus("building");
-      log(\`Compilando proyecto (Destino: \${format.toUpperCase()})...\`);
+      log(`Compilando proyecto (Destino: ${format.toUpperCase()})...`);
       
       if (format === "wordpress") {
         await runCommand("npx", ["vite", "build", "--base=./"], projectRoot, log);
@@ -235,7 +242,7 @@ app.post("/svc/convert", upload.single("projectZip"), async (req, res) => {
           log("Advertencia: No se pudo leer la carpeta de assets generada.");
         }
 
-        const wpPluginCode = \`<?php
+         const wpPluginCode = `<?php
 /**
  * Plugin Name: AI Studio App Integration
  * Description: Proyecto web generado desde Google AI Studio, insertable en WordPress.
@@ -247,8 +254,8 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 function aistudio_app_enqueue_assets() {
     $plugin_url = plugin_dir_url(__FILE__);
-    wp_enqueue_script('aistudio-app-js', $plugin_url . 'dist/assets/\${jsFile}', array(), '1.0', true);
-    \${cssFile ? \\\`wp_enqueue_style('aistudio-app-css', $plugin_url . 'dist/assets/\${cssFile}', array(), '1.0');\\\` : ''}
+    wp_enqueue_script('aistudio-app-js', $plugin_url . 'dist/assets/${jsFile}', array(), '1.0', true);
+    ${cssFile ? `wp_enqueue_style('aistudio-app-css', $plugin_url . 'dist/assets/${cssFile}', array(), '1.0');` : ''}
 }
 add_action('wp_enqueue_scripts', 'aistudio_app_enqueue_assets');
 
@@ -266,7 +273,7 @@ function aistudio_app_shortcode() {
 }
 // Uso: [aistudio_app]
 add_shortcode('aistudio_app', 'aistudio_app_shortcode');
-\`;
+`;
         
         const phpPluginPath = path.join(workDir, "aistudio-app.php");
         await fs.writeFile(phpPluginPath, wpPluginCode);
@@ -278,7 +285,14 @@ add_shortcode('aistudio_app', 'aistudio_app_shortcode');
 
       } else {
         log("Agregando .htaccess para cPanel/Apache SPA Routing...");
-        const htaccessContent = \`<IfModule mod_rewrite.c>\\n  RewriteEngine On\\n  RewriteBase /\\n  RewriteRule ^index\\\\.html$ - [L]\\n  RewriteCond %{REQUEST_FILENAME} !-f\\n  RewriteCond %{REQUEST_FILENAME} !-d\\n  RewriteRule . /index.html [L]\\n</IfModule>\`;
+        const htaccessContent = `<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>`;
         await fs.writeFile(path.join(distDir, ".htaccess"), htaccessContent);
         
         log("Comprimiendo carpeta dist/... para descarga");
@@ -294,7 +308,7 @@ add_shortcode('aistudio_app', 'aistudio_app_shortcode');
       jobs.set(jobId, finalJob);
 
     } catch (err: any) {
-      log(\`Error: \${err.message}\`);
+      log(`Error: ${err.message}`);
       const failedJob = jobs.get(jobId)!;
       failedJob.status = "error";
       failedJob.error = err.message;
@@ -341,7 +355,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(\`🚀 Servidor en ejecución en http://localhost:\${PORT}\`);
+    console.log(`🚀 Servidor en ejecución en http://localhost:${PORT}`);
   });
 }
 
