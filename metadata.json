@@ -1,6 +1,6 @@
 {
-  "name": "IASTUDIOTO",
-  "description": "Herramienta que compila proyectos descargados de IA (ZIP) en formatos listos para producción para subirse a cualquier cPanel, Vercel o directamente convertirlo en un Plugin de WordPress.",
+  "name": "EmprendeKit IA",
+  "description": "Tu ecosistema completo: Convierte sitios de IA a cPanel/WordPress, genera landing pages, crea bio-links, genera enlaces de WhatsApp y accede a planes de hosting exclusivos.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }
