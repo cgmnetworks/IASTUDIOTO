@@ -7,8 +7,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
   UploadCloud, FileType, Terminal, Loader2, CheckCircle, AlertTriangle, 
   Download, Rocket, FileArchive, LayoutTemplate, Link as LinkIcon, 
-  MessageCircle, Server, ShoppingBag, Menu, X, Copy, ArrowRight, Lock 
+  MessageCircle, Server, ShoppingBag, Menu, X, Copy, ArrowRight, Lock, LogOut
 } from "lucide-react";
+import { auth, signIn, signOut } from "./firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 type JobStatus = "pending" | "extracting" | "installing" | "building" | "completed" | "error";
 
@@ -21,8 +23,19 @@ interface Job {
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("converter");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setIsAuthenticated(!!currentUser);
+      setIsAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // --- Converter State ---
   const [file, setFile] = useState<File | null>(null);
@@ -475,7 +488,7 @@ export default function App() {
           <span className="text-xl font-black text-gray-800 tracking-tight">EmprendeKit <span className="text-indigo-600 font-bold">IA</span></span>
         </div>
         <button 
-          onClick={() => setIsAuthenticated(true)}
+          onClick={signIn}
           className="flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-5 py-2.5 rounded-full font-bold transition-all shadow-sm"
         >
           <Lock className="w-4 h-4" /> Entrar al Panel
@@ -499,7 +512,7 @@ export default function App() {
         </p>
         
         <button 
-          onClick={() => setIsAuthenticated(true)}
+          onClick={signIn}
           className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white font-bold text-lg rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-900/20 animate-in fade-in slide-in-from-bottom-8"
         >
           <span className="relative z-10">Comenzar Gratis Ahora</span>
@@ -556,6 +569,14 @@ export default function App() {
       <MessageCircle className="w-8 h-8" />
     </a>
   );
+
+  if (isAuthLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -633,9 +654,16 @@ export default function App() {
            
            <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-gray-500 hidden sm:block">Plan Gratuito</span>
-              <div className="w-9 h-9 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold text-sm border-2 border-white shadow-sm ring-2 ring-gray-100 cursor-pointer">
-                US
-              </div>
+              {user?.photoURL ? (
+                  <img src={user.photoURL} alt="User profile" className="w-9 h-9 rounded-full ring-2 ring-gray-100 shadow-sm" />
+              ) : (
+                  <div className="w-9 h-9 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold text-sm border-2 border-white shadow-sm ring-2 ring-gray-100">
+                    {user?.email?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+              )}
+              <button onClick={signOut} className="text-gray-500 hover:text-red-500 transition-colors p-2" title="Cerrar sesión">
+                <LogOut className="w-5 h-5"/>
+              </button>
            </div>
         </header>
 
