@@ -527,7 +527,7 @@ export default function App() {
                         Mío Propio
                      </button>
                      <button onClick={() => setHDomainType('subdomain')} className={`py-3 rounded-xl border-2 font-bold text-sm flex items-center justify-center gap-2 transition-colors relative ${hDomainType === 'subdomain' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
-                        Subdominio <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm">+$10 USD</span>
+                        Subdominio
                      </button>
                    </div>
                  </div>
@@ -560,24 +560,62 @@ export default function App() {
                  <button 
                   disabled={!hName || !hEmail || !hDomain}
                   onClick={() => {
-                     const basePrice = hPlan === "Básico" ? 19.97 : hPlan === "Pro" ? 34.97 : 44.97;
-                     const targetPrice = hDomainType === "subdomain" ? basePrice + 10 : basePrice;
+                     const targetPrice = hPlan === "Básico" ? 19.97 : hPlan === "Pro" ? 34.97 : 44.97;
                      const finalDomainStr = hDomainType === "subdomain" ? `${hDomain}.${hSubdomainExt}` : hDomain;
                      const item_name = `Hosting ${hPlan} + ${finalDomainStr}`;
-                     window.open(`https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=paypal@emprendekitai.com&item_name=${encodeURIComponent(item_name)}&amount=${targetPrice}&currency_code=USD`, '_blank');
+                     
+                     // Guarda en BD en paralelo
+                     try {
+                        const orderRef = doc(collection(db, 'hosting_orders'), Date.now().toString());
+                        setDoc(orderRef, {
+                           name: hName, email: hEmail, plan: hPlan, domain: finalDomainStr,
+                           price: targetPrice, status: "pending_paypal", date: new Date().toISOString()
+                        });
+                        
+                        // Envio silencioso del correo usando FormSubmit AJAX
+                        fetch("https://formsubmit.co/ajax/info@emprendekitia.com", {
+                            method: "POST",
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                _subject: `Nuevo Pedido de Hosting: ${hPlan}`,
+                                name: hName,
+                                email: hEmail,
+                                message: `El usuario ${hName} (${hEmail}) quiere adquirir el Plan ${hPlan} con el dominio ${finalDomainStr} via PayPal.`
+                            })
+                        }).catch(err => console.error("Error email backend", err));
+                     } catch(err) {
+                        console.error('Failed to save to firestore', err);
+                     }
+
+                     showToast("Procesando pago seguro...");
+                     window.open(`https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=paypal@emprendekitai.com&item_name=${encodeURIComponent(item_name)}&amount=${targetPrice}&currency_code=USD&custom=${encodeURIComponent(hEmail)}`, '_blank');
                   }}
                   className="w-full bg-[#0070ba] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#005ea6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
                    Pagar con PayPal
                  </button>
+
                  <button 
                   disabled={!hName || !hEmail || !hDomain}
                   onClick={() => {
                      const finalDomainStr = hDomainType === "subdomain" ? `${hDomain}.${hSubdomainExt}` : hDomain;
-                     const msg = `Hola, EmprendekitIa,tengo una consulta mi nombre es: ${hName} mi correo es ${hEmail} quiero el plan: ${hPlan} con el dominio: ${finalDomainStr}`;
+                     const msg = `Hola, estos son los datos para el registro del plan hosting ${hPlan}. Nombre: ${hName}, Correo: ${hEmail}, Dominio: ${finalDomainStr}. En espera de las instrucciones de pago.`;
+                     
+                     // Guarda la orden también como pendiente vía whatsapp
+                     try {
+                        const orderRef = doc(collection(db, 'hosting_orders'), "wa_" + Date.now().toString());
+                        setDoc(orderRef, {
+                           name: hName, email: hEmail, plan: hPlan, domain: finalDomainStr,
+                           status: "pending_whatsapp", date: new Date().toISOString()
+                        });
+                     } catch(err) {}
+
                      window.open(`https://wa.me/50762417266?text=${encodeURIComponent(msg)}`, '_blank');
                   }}
                   className="w-full border-2 border-green-500 text-green-600 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                   <MessageCircle className="w-5 h-5"/> Reportar Pago por WhatsApp
+                   <MessageCircle className="w-5 h-5"/> Acordar Pago por WhatsApp
                  </button>
               </div>
            </div>
