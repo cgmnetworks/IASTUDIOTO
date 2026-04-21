@@ -7,7 +7,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
   UploadCloud, FileType, Terminal, Loader2, CheckCircle, AlertTriangle, 
   Download, Rocket, FileArchive, LayoutTemplate, Link as LinkIcon, 
-  MessageCircle, Server, ShoppingBag, Menu, X, Copy, ArrowRight, Lock, LogOut
+  MessageCircle, Server, ShoppingBag, Menu, X, Copy, ArrowRight, Lock, LogOut,
+  FolderOpen, FileText, Globe
 } from "lucide-react";
 import { auth, signIn, signOut, db } from "./firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -237,12 +238,15 @@ export default function App() {
   };
 
   const SIDEBAR_ITEMS = [
+    { id: "my-projects", label: "Mis Proyectos", icon: <FolderOpen className="w-5 h-5"/> },
     { id: "converter", label: "Web IA Converter", icon: <FileArchive className="w-5 h-5"/> },
     { id: "landings", label: "Generador Landings", icon: <LayoutTemplate className="w-5 h-5"/> },
+    { id: "sales-page", label: "Páginas de Venta/Pago", icon: <ShoppingBag className="w-5 h-5"/> },
+    { id: "forms", label: "Creador Formularios", icon: <FileText className="w-5 h-5"/> },
     { id: "biolinks", label: "Creador Bio-Links", icon: <LinkIcon className="w-5 h-5"/> },
     { id: "whatsapp", label: "Generador WhatsApp", icon: <MessageCircle className="w-5 h-5"/> },
-    { id: "hosting", label: "Planes Hosting", icon: <Server className="w-5 h-5"/> },
-    { id: "marketplace", label: "Marketplace / Recursos", icon: <ShoppingBag className="w-5 h-5"/> },
+    { id: "community-hosting", label: "Hosting Comunitario", icon: <Globe className="w-5 h-5"/> },
+    { id: "hosting", label: "Planes Hosting VIP", icon: <Server className="w-5 h-5"/> },
   ];
 
   const renderConverter = () => (
@@ -794,6 +798,10 @@ export default function App() {
       case "whatsapp": return renderWhatsApp();
       case "hosting": return renderHosting();
       case "landings": return renderLandings();
+      case "my-projects": return renderComingSoon("Mis Proyectos", <FolderOpen className="w-12 h-12"/>);
+      case "sales-page": return renderComingSoon("Páginas de Venta/Pago", <ShoppingBag className="w-12 h-12"/>);
+      case "forms": return renderComingSoon("Creador de Formularios", <FileText className="w-12 h-12"/>);
+      case "community-hosting": return renderComingSoon("Lanza tu Proyecto (Grátis)", <Globe className="w-12 h-12"/>);
       case "biolinks": return renderComingSoon("Creador de Bio-Links", <LinkIcon className="w-12 h-12"/>);
       case "marketplace": return renderComingSoon("Marketplace de Utilidades", <ShoppingBag className="w-12 h-12"/>);
       default: return renderConverter();
