@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
   UploadCloud, FileType, Terminal, Loader2, CheckCircle, AlertTriangle, 
   Download, Rocket, FileArchive, LayoutTemplate, Link as LinkIcon, 
-  MessageCircle, Server, ShoppingBag, Menu, X, Copy 
+  MessageCircle, Server, ShoppingBag, Menu, X, Copy, ArrowRight, Lock 
 } from "lucide-react";
 
 type JobStatus = "pending" | "extracting" | "installing" | "building" | "completed" | "error";
@@ -20,6 +20,7 @@ interface Job {
 }
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState("converter");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -436,6 +437,80 @@ export default function App() {
     </div>
   );
 
+  const renderLandingPage = () => (
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans selection:bg-indigo-200">
+      <nav className="flex items-center justify-between p-6 max-w-7xl mx-auto w-full">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md">
+            E<span className="text-indigo-200">K</span>
+          </div>
+          <span className="text-xl font-black text-gray-800 tracking-tight">EmprendeKit <span className="text-indigo-600 font-bold">IA</span></span>
+        </div>
+        <button 
+          onClick={() => setIsAuthenticated(true)}
+          className="flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-5 py-2.5 rounded-full font-bold transition-all shadow-sm"
+        >
+          <Lock className="w-4 h-4" /> Entrar al Panel
+        </button>
+      </nav>
+
+      <main className="flex-1 flex flex-col items-center justify-center text-center px-4 py-20">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-700 font-bold text-sm mb-8 animate-in fade-in slide-in-from-bottom-4">
+           <Rocket className="w-4 h-4" /> La revolución de las herramientas indie
+        </div>
+        
+        <h1 className="text-5xl md:text-7xl font-black text-gray-900 tracking-tight max-w-4xl leading-tight mb-6 animate-in fade-in slide-in-from-bottom-5">
+          Tu Negocio Digital, <br/>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+            Lanzado en Minutos.
+          </span>
+        </h1>
+        
+        <p className="text-lg md:text-xl text-gray-500 max-w-2xl mb-10 animate-in fade-in slide-in-from-bottom-6">
+          Olvídate de la barrera técnica. Convierte proyectos de Inteligencia Artificial en webs reales, genera links de WhatsApp con analíticas y administra tu ecosistema desde un solo lugar.
+        </p>
+        
+        <button 
+          onClick={() => setIsAuthenticated(true)}
+          className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white font-bold text-lg rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-900/20 animate-in fade-in slide-in-from-bottom-8"
+        >
+          <span className="relative z-10">Comenzar Gratis Ahora</span>
+          <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        </button>
+
+        <div className="mt-24 grid md:grid-cols-3 gap-8 max-w-6xl w-full animate-in fade-in slide-in-from-bottom-10" style={{ animationDelay: '200ms' }}>
+           <div className="bg-white p-8 rounded-3xl text-left border border-gray-100 shadow-sm hover:shadow-xl transition-all">
+              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                <FileArchive className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Convertidor IA a Web</h3>
+              <p className="text-gray-500 leading-relaxed">Sube el ZIP que te generó Google AI Studio o ChatGPT y obten los archivos para cPanel o un Plugin de WordPress instantáneamente.</p>
+           </div>
+
+           <div className="bg-white p-8 rounded-3xl text-left border border-gray-100 shadow-sm hover:shadow-xl transition-all">
+              <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-6">
+                <MessageCircle className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Links Rastreables WA</h3>
+              <p className="text-gray-500 leading-relaxed">Genera links limpios para tu WhatsApp con mensajes pre-escritos e intercepta estadísticas reales de clicks y ubicaciones geográficas.</p>
+           </div>
+
+           <div className="bg-white p-8 rounded-3xl text-left border border-gray-100 shadow-sm hover:shadow-xl transition-all relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4">
+                 <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded-md">PRO PRONTO</span>
+              </div>
+              <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-6">
+                <LayoutTemplate className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Constructor desde Imagen</h3>
+              <p className="text-gray-500 leading-relaxed">Sube el volante (Flyer) de un negocio y deja que la Inteligencia Artificial analice los datos y construya una "Landing Page" profesional.</p>
+           </div>
+        </div>
+      </main>
+    </div>
+  );
+
   const renderContent = () => {
     switch(activeTab) {
       case "converter": return renderConverter();
@@ -447,6 +522,10 @@ export default function App() {
       default: return renderConverter();
     }
   };
+
+  if (!isAuthenticated) {
+    return renderLandingPage();
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
