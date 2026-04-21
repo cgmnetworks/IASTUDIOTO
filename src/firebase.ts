@@ -33,8 +33,15 @@ export const signIn = async () => {
         } catch(err) {
             console.error("No se pudo registrar en la base de datos", err);
         }
-    } catch (e) {
+    } catch (e: any) {
         console.error("Login failed", e);
+        if (e.code === 'auth/unauthorized-domain') {
+            alert(`¡Cuidado! El inicio de sesión falló porque este dominio aún no está autorizado en tu cuenta de Firebase.\n\nPara solucionarlo, ve a tu Consola de Firebase -> Authentication -> Settings -> Authorized domains, y añade el dominio exacto en el que estás alojando esta página (por ejemplo, tudominio.onrender.com).`);
+        } else if (e.code === 'auth/popup-closed-by-user') {
+            console.log("El usuario cerró la ventana emergente de inicio de sesión.");
+        } else {
+            alert(`Error al iniciar sesión: ${e.message || 'Error desconocido'}`);
+        }
     }
 };
 

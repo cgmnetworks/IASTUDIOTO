@@ -138,7 +138,7 @@ export default function App() {
   };
 
   const SIDEBAR_ITEMS = [
-    { id: "converter", label: "STUDIOIACONVERTER", icon: <FileArchive className="w-5 h-5"/> },
+    { id: "converter", label: "Web IA Converter", icon: <FileArchive className="w-5 h-5"/> },
     { id: "landings", label: "Generador Landings", icon: <LayoutTemplate className="w-5 h-5"/> },
     { id: "biolinks", label: "Creador Bio-Links", icon: <LinkIcon className="w-5 h-5"/> },
     { id: "whatsapp", label: "Generador WhatsApp", icon: <MessageCircle className="w-5 h-5"/> },
@@ -147,13 +147,13 @@ export default function App() {
   ];
 
   const renderConverter = () => (
-    <div className="max-w-2xl w-full bg-white rounded-3xl shadow-sm border border-gray-100 p-8 space-y-8 animate-in fade-in">
+    <div className="max-w-xl w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-8 animate-in fade-in">
       <header className="text-center space-y-2">
-        <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 scale-110">
+        <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <FileType className="w-8 h-8" />
         </div>
-        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600 tracking-tight">STUDIOIACONVERTER</h1>
-        <p className="text-gray-500 text-lg max-w-lg mx-auto">
+        <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600 tracking-tight">Web IA Converter</h1>
+        <p className="text-gray-500 text-base max-w-lg mx-auto">
           Convierte archivos <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded-md text-sm">.zip</span> de IA Studio a sitios HTML o Plugins de WP.
         </p>
       </header>
@@ -171,7 +171,7 @@ export default function App() {
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
-            className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200 ${
               isDragging ? "bg-blue-50 border-blue-400" : "bg-gray-50 border-gray-300 hover:bg-gray-100"
             }`}
           >
@@ -252,10 +252,10 @@ export default function App() {
   );
 
   const renderLandings = () => (
-    <div className="max-w-4xl bg-white rounded-3xl shadow-sm border border-gray-100 p-8 animate-in fade-in">
-      <header className="mb-8">
-        <h2 className="text-3xl font-bold flex items-center gap-3 text-gray-800">
-          <LayoutTemplate className="w-8 h-8 text-indigo-500"/> Generador de Sitios con IA
+    <div className="max-w-3xl bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-in fade-in">
+      <header className="mb-6">
+        <h2 className="text-2xl font-bold flex items-center gap-3 text-gray-800">
+          <LayoutTemplate className="w-7 h-7 text-indigo-500"/> Generador de Sitios con IA
         </h2>
         <p className="text-gray-500 mt-2">
           Convierte una idea, los datos de un negocio en Google Maps, o hasta un <span className="font-bold text-indigo-500">Flyer de imagen</span> en un sitio web completo, funcional y listo para cPanel.
@@ -313,7 +313,7 @@ export default function App() {
 
   const renderWhatsApp = () => (
     <div className="max-w-4xl grid md:grid-cols-5 gap-6 animate-in fade-in">
-      <div className="md:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-fit">
+      <div className="md:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit">
         <header className="mb-6">
           <h2 className="text-2xl font-bold flex items-center gap-3 text-gray-800"><MessageCircle className="w-6 h-6 text-green-500"/> Enlaces WA</h2>
           <p className="text-gray-500 mt-2 text-sm">Crea tu link e intercepta las analíticas.</p>
@@ -324,21 +324,24 @@ export default function App() {
             <input type="text" placeholder="5215555555555" className="w-full border border-gray-300 rounded-xl p-3 focus:ring-4 focus:ring-green-500/20 outline-none" value={waPhone} onChange={e => setWaPhone(e.target.value)} />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Mensaje</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Mensaje (Opcional)</label>
             <textarea placeholder="Hola..." className="w-full border border-gray-300 rounded-xl p-3 focus:ring-4 focus:ring-green-500/20 outline-none h-24 resize-none" value={waMsg} onChange={e => setWaMsg(e.target.value)} />
           </div>
-          <button onClick={generateWa} className="w-full py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 shadow-md">Acortar y Rastrear</button>
+          <button onClick={generateWa} className="w-full py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 shadow-md">Generar Enlace</button>
 
           {waLink && (
-            <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-xl text-center">
-               <span className="block text-indigo-600 font-bold text-sm mb-2">ekit.link/pizza-luigi</span>
-               <button className="w-full p-2 bg-white border border-gray-300 rounded-lg shadow-sm font-bold text-sm">Copiar Enlace</button>
+            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl text-center">
+               <span className="block text-green-700 font-medium text-xs mb-3 break-all px-2">{waLink}</span>
+               <button onClick={() => {
+                 navigator.clipboard.writeText(waLink);
+                 alert("¡Enlace de WhatsApp copiado!");
+               }} className="w-full p-2 bg-white border border-green-300 text-green-700 rounded-lg shadow-sm font-bold text-sm hover:bg-green-100 transition-colors">Copiar Enlace</button>
             </div>
           )}
         </div>
       </div>
 
-      <div className="md:col-span-3 bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+      <div className="md:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
          <h3 className="text-lg font-bold text-gray-800 mb-6 border-b pb-4">Panel de Estadísticas (Demo)</h3>
          
          <div className="grid grid-cols-2 gap-4 mb-8">
@@ -522,10 +525,10 @@ export default function App() {
 
         <div className="mt-24 grid md:grid-cols-3 gap-8 max-w-6xl w-full animate-in fade-in slide-in-from-bottom-10" style={{ animationDelay: '200ms' }}>
            <div className="bg-white p-8 rounded-3xl text-left border border-gray-100 shadow-sm hover:shadow-xl transition-all">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6">
                 <FileArchive className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">STUDIOIACONVERTER</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Web IA Converter</h3>
               <p className="text-gray-500 leading-relaxed">Sube el ZIP que te generó Google AI Studio o ChatGPT y obten los archivos para cPanel o un Plugin de WordPress instantáneamente.</p>
            </div>
 
