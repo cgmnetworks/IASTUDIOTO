@@ -237,31 +237,135 @@ export default function App() {
     </div>
   );
 
-  const renderWhatsApp = () => (
-    <div className="max-w-2xl bg-white rounded-3xl shadow-sm border border-gray-100 p-8 animate-in fade-in">
+  const renderLandings = () => (
+    <div className="max-w-4xl bg-white rounded-3xl shadow-sm border border-gray-100 p-8 animate-in fade-in">
       <header className="mb-8">
-        <h2 className="text-3xl font-bold flex items-center gap-3 text-gray-800"><MessageCircle className="w-8 h-8 text-green-500"/> Enlaces de WhatsApp</h2>
-        <p className="text-gray-500 mt-2">Crea links personalizados para tus clientes de forma gratuita para que se comuniquen a tu número con un mensaje pre-configurado.</p>
+        <h2 className="text-3xl font-bold flex items-center gap-3 text-gray-800">
+          <LayoutTemplate className="w-8 h-8 text-indigo-500"/> Generador de Sitios con IA
+        </h2>
+        <p className="text-gray-500 mt-2">
+          Convierte una idea, los datos de un negocio en Google Maps, o hasta un <span className="font-bold text-indigo-500">Flyer de imagen</span> en un sitio web completo, funcional y listo para cPanel.
+        </p>
       </header>
-      <div className="space-y-5">
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Número de teléfono</label>
-          <p className="text-xs text-gray-400 mb-3">Incluye tu código de país sin el símbolo de +</p>
-          <input type="text" placeholder="Ej: 5215555555555" className="w-full border border-gray-300 rounded-xl p-4 focus:ring-4 focus:ring-green-500/20 outline-none transition-all" value={waPhone} onChange={e => setWaPhone(e.target.value)} />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Mensaje inicial</label>
-          <p className="text-xs text-gray-400 mb-3">El mensaje que aparecerá escrito en el chat del cliente</p>
-          <textarea placeholder="Hola, me interesa agendar una asesoría..." className="w-full border border-gray-300 rounded-xl p-4 focus:ring-4 focus:ring-green-500/20 outline-none h-32 transition-all resize-none" value={waMsg} onChange={e => setWaMsg(e.target.value)} />
-        </div>
-        <button onClick={generateWa} className="w-full py-4 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-all text-lg shadow-lg shadow-green-500/30">Generar Link Inteligente</button>
 
-        {waLink && (
-          <div className="mt-8 p-4 bg-green-50 border-2 border-green-200 rounded-xl flex items-center justify-between">
-             <span className="text-green-800 font-mono text-sm truncate mr-4">{waLink}</span>
-             <button onClick={() => navigator.clipboard.writeText(waLink)} className="p-3 bg-white border border-green-200 rounded-lg shadow-sm hover:bg-green-100 flex gap-2 items-center text-green-700 font-bold transition-all"><Copy className="w-4 h-4"/> Copiar</button>
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="space-y-6">
+          <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+            <label className="block text-sm font-bold text-indigo-900 mb-2">1. ¿De qué trata el negocio?</label>
+            <p className="text-xs text-indigo-700 mb-3">Pega la descripción, idea, o los datos copiados de Google Maps.</p>
+            <textarea 
+              placeholder="Ej: Es una pizzería llamada 'Don Luigi' en Ciudad de México, abierta de 9 a 9..." 
+              className="w-full border-none rounded-xl p-4 ring-2 ring-indigo-200 focus:ring-indigo-500 outline-none h-32 transition-all resize-none bg-white"
+            />
           </div>
-        )}
+
+          <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+             <label className="block text-sm font-bold text-gray-800 mb-2">2. Sube un Flyer (Opcional)</label>
+             <p className="text-xs text-gray-500 mb-3">Nuestra IA leerá textos, precios y colores de tu imagen.</p>
+             <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:bg-gray-100 transition-all flex flex-col items-center">
+                <UploadCloud className="w-8 h-8 text-gray-400 mb-2" />
+                <span className="text-sm font-bold text-gray-600">Subir Imagen o PDF</span>
+             </div>
+          </div>
+
+          <button className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black rounded-xl hover:opacity-90 transition-all text-lg shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2">
+            <Rocket className="w-5 h-5"/> Generar Super Sitio Web
+          </button>
+        </div>
+
+        {/* Preview Panel Mockup */}
+        <div className="bg-gray-900 rounded-2xl p-4 border-4 border-gray-800 shadow-2xl flex flex-col h-[500px]">
+           <div className="flex items-center gap-2 mb-3">
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <div className="ml-4 text-xs font-mono text-gray-400 bg-gray-800 px-3 py-1 rounded-md">Vista Previa - pizza-don-luigi.html</div>
+           </div>
+           
+           <div className="flex-1 bg-white rounded-lg flex flex-col items-center justify-center text-center p-6 opacity-50 relative overflow-hidden group">
+              <LayoutTemplate className="w-16 h-16 text-gray-300 mb-4" />
+              <p className="text-gray-400 font-medium">El sitio generado aparecerá aquí.</p>
+              
+              <div className="absolute inset-0 bg-indigo-900/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm">
+                 <button className="px-6 py-3 bg-white text-indigo-700 font-bold rounded-xl shadow-xl flex items-center gap-2">
+                   <Download className="w-5 h-5" /> Descargar ZIP cPanel
+                 </button>
+              </div>
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderWhatsApp = () => (
+    <div className="max-w-4xl grid md:grid-cols-5 gap-6 animate-in fade-in">
+      <div className="md:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-fit">
+        <header className="mb-6">
+          <h2 className="text-2xl font-bold flex items-center gap-3 text-gray-800"><MessageCircle className="w-6 h-6 text-green-500"/> Enlaces WA</h2>
+          <p className="text-gray-500 mt-2 text-sm">Crea tu link e intercepta las analíticas.</p>
+        </header>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Teléfono</label>
+            <input type="text" placeholder="5215555555555" className="w-full border border-gray-300 rounded-xl p-3 focus:ring-4 focus:ring-green-500/20 outline-none" value={waPhone} onChange={e => setWaPhone(e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Mensaje</label>
+            <textarea placeholder="Hola..." className="w-full border border-gray-300 rounded-xl p-3 focus:ring-4 focus:ring-green-500/20 outline-none h-24 resize-none" value={waMsg} onChange={e => setWaMsg(e.target.value)} />
+          </div>
+          <button onClick={generateWa} className="w-full py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 shadow-md">Acortar y Rastrear</button>
+
+          {waLink && (
+            <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-xl text-center">
+               <span className="block text-indigo-600 font-bold text-sm mb-2">ekit.link/pizza-luigi</span>
+               <button className="w-full p-2 bg-white border border-gray-300 rounded-lg shadow-sm font-bold text-sm">Copiar Enlace</button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="md:col-span-3 bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+         <h3 className="text-lg font-bold text-gray-800 mb-6 border-b pb-4">Panel de Estadísticas (Demo)</h3>
+         
+         <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200">
+               <div className="text-gray-500 text-sm font-bold mb-1">Total Clics (Este mes)</div>
+               <div className="text-4xl font-black text-gray-900">1,204</div>
+               <div className="text-green-500 text-xs font-bold mt-2">↑ +14% vs mes anterior</div>
+            </div>
+            <div className="p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200">
+               <div className="text-gray-500 text-sm font-bold mb-1">Dispositivo Movil</div>
+               <div className="text-4xl font-black text-gray-900">89%</div>
+               <div className="text-gray-400 text-xs font-bold mt-2">Smartphones</div>
+            </div>
+         </div>
+
+         <div className="space-y-4">
+            <h4 className="font-bold text-sm text-gray-500 uppercase tracking-wider">Top Países</h4>
+            <div className="space-y-3">
+               <div className="flex items-center gap-3">
+                  <span className="text-xl">🇲🇽</span>
+                  <div className="flex-1 bg-gray-100 h-2 rounded-full overflow-hidden">
+                     <div className="bg-green-500 h-full w-[65%] rounded-full"></div>
+                  </div>
+                  <span className="font-bold text-sm text-gray-700">65%</span>
+               </div>
+               <div className="flex items-center gap-3">
+                  <span className="text-xl">🇨🇴</span>
+                  <div className="flex-1 bg-gray-100 h-2 rounded-full overflow-hidden">
+                     <div className="bg-green-400 h-full w-[20%] rounded-full"></div>
+                  </div>
+                  <span className="font-bold text-sm text-gray-700">20%</span>
+               </div>
+               <div className="flex items-center gap-3">
+                  <span className="text-xl">🇪🇸</span>
+                  <div className="flex-1 bg-gray-100 h-2 rounded-full overflow-hidden">
+                     <div className="bg-green-300 h-full w-[10%] rounded-full"></div>
+                  </div>
+                  <span className="font-bold text-sm text-gray-700">10%</span>
+               </div>
+            </div>
+         </div>
       </div>
     </div>
   );
@@ -337,7 +441,7 @@ export default function App() {
       case "converter": return renderConverter();
       case "whatsapp": return renderWhatsApp();
       case "hosting": return renderHosting();
-      case "landings": return renderComingSoon("Generador de Landing Pages", <LayoutTemplate className="w-12 h-12"/>);
+      case "landings": return renderLandings();
       case "biolinks": return renderComingSoon("Creador de Bio-Links", <LinkIcon className="w-12 h-12"/>);
       case "marketplace": return renderComingSoon("Marketplace de Utilidades", <ShoppingBag className="w-12 h-12"/>);
       default: return renderConverter();
