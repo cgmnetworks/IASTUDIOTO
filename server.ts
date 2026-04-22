@@ -67,15 +67,17 @@ app.post("/svc/generate-site", upload.single("flyer"), async (req, res) => {
   }
 
   try {
-     let content: any[] = [];
+     let parts: any[] = [];
      const systemInstruction = `Eres un experto creador web. Devuelve ESTRICTAMENTE SOLO código HTML con Tailwind CSS embebido (vía CDN <script src="https://cdn.tailwindcss.com"></script>). No devuelvas markdown like \`\`\`html ni ninguna otra palabra extra, solo empieza con <!DOCTYPE html>.`;
      
-     content.push(`Crea una Landing Page moderna y responsiva basada en lo siguiente: ${prompt}. Genera algo bonito y estructurado que pueda vender la idea.`);
+     parts.push({
+        text: `Crea una Landing Page moderna y responsiva basada en lo siguiente: ${prompt}. Genera algo bonito y estructurado que pueda vender la idea.`
+     });
 
      if (file) {
         const fileData = await fs.readFile(file.path);
         const mimeType = file.mimetype || "image/jpeg";
-        content.push({
+        parts.push({
            inlineData: {
               data: fileData.toString("base64"),
               mimeType: mimeType
@@ -84,8 +86,8 @@ app.post("/svc/generate-site", upload.single("flyer"), async (req, res) => {
      }
 
      const response = await aiConfigs.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: content,
+        model: "gemini-3-flash-preview",
+        contents: { parts },
         config: {
            systemInstruction,
            temperature: 0.7
