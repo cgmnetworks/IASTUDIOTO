@@ -98,7 +98,8 @@ export default function App() {
       
       const res = await fetch("/svc/generate-site", { method: "POST", body: formData });
       if (!res.ok) {
-        throw new Error("Error generando el sitio. Revisa la consola o intenta de nuevo.");
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Error generando el sitio. Revisa la consola o intenta de nuevo.");
       }
       const data = await res.json();
       setGeneratedSiteData({ id: data.id, html: data.html });

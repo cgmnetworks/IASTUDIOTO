@@ -124,6 +124,11 @@ app.post("/svc/generate-site", upload.single("flyer"), async (req, res) => {
      res.json({ id: siteId, html });
   } catch (error: any) {
      console.error("Gemini Error:", error);
+     
+     if (error?.status === "INVALID_ARGUMENT" || error?.message?.includes('API key not valid')) {
+       return res.status(500).json({ error: "Llave de API de Gemini no válida. Por favor, revisa tus 'Settings / Secrets' y actualiza la variable GEMINI_API_KEY." });
+     }
+
      res.status(500).json({ error: "Error en la IA generativa." });
   }
 });
